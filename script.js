@@ -7,6 +7,8 @@ const buttonAdd = document.querySelector('.user-info__button');
 const cardPopup = document.querySelector('.popup');
 //кнопка закрыть форму
 const buttonClose = document.querySelector('.popup__close');
+
+
 // открыть форму
 function openPopup() {
   cardPopup.classList.toggle('popup_is-opened');
@@ -15,7 +17,6 @@ function openPopup() {
 function closePopup() {
   cardPopup.classList.toggle('popup_is-opened');
 };
-
 // добавить элемент
 function addElem(elem) {
   return document.createElement(elem);
@@ -25,7 +26,7 @@ function addClass(name, attribute) {
   return name.classList.add(attribute);
 };
 // добавить новую карточку, принимает на вход объект с данными
-function addCard(obj) {
+function createTemplate(obj) {
   // создать разметку карточки
   const cardItem = addElem('div');
   addClass(cardItem, 'place-card');
@@ -55,12 +56,12 @@ function addCard(obj) {
 
   cardItem.appendChild(cardImage);
   cardItem.appendChild(cardDescription);
-/* REVIEW. Можно лучше. Лучше добавление карточки к контейнеру всех карточек делать при рендере карточек и при добавлении новой карточки, введя
-дополнительную функцию добавления карточки в конец общего списка (то есть команду list.appendChild(cardItem) убрать из функции addCard
-и поместить в другую), так как в соответствии с принципом единственной ответственности функции, addCard должна отвечать
-только за создание шаблона карточки и возврат его в инструкции return. Она не должна зависеть от размётки на странице - от константы list.
-Тогда addCard (лучше её переименовать в createTemplate, например) можно использовать и в других проектах, где бы так же нужен был шаблон карточки.*/
-  list.appendChild(cardItem);
+
+  return cardItem;
+};
+//функция добавляет карточку в разметку страницы, принимает на вход элементы (к которому добавить, добавляемый)
+function addCard(item, elem) {
+  item.appendChild(elem);
 };
 // создать карточку из формы
 function createCard(event) {
@@ -71,15 +72,18 @@ function createCard(event) {
   const cardTitle = document.querySelector('.popup__input_type_name');
   const cardLink = document.querySelector('.popup__input_type_link-url');
   const popupForm = document.querySelector('.popup__form');
-  // занести их в массив
+  // занести их в объект
   cardObject.name = cardTitle.value;
   cardObject.link = cardLink.value;
   // проверить заполнены ли поля
   if (cardTitle.value.length === 0 || cardLink.value.length === 0) {
     return alert('Заполните пожалуйста оба поля')
   };
-  // вызвать функцию addCard
-  addCard(cardObject);
+  // записать разметку в переменную
+  const template = createTemplate(cardObject);
+  // добавить разметку на страницу
+  addCard(list, template);
+  //  сбросить данные в форме
   popupForm.reset();
   // закрыть форму по отправке
   closePopup();
@@ -95,10 +99,18 @@ function addNndRemoveLike(event) {
     event.target.classList.toggle('place-card__like-icon_liked');
 };
 
+//Функция рендера массива, содержащего объекты с карточками
+function renderArrow(arr) {
+  arr.forEach(function (obj) {
+    const template = createTemplate(obj);
+    addCard(list, template)
+  })
+};
+
 
 // пройти по исходному массиву функцией, чтобы получить данные для каждой карточки
-/* REVIEW. Можно лучше. Рендер карточек лучше поместить в функцию, где будет вызываться и функция добавления карточки в конец списка. */
-initialCards.forEach(addCard);
+renderArrow(initialCards);
+
 
 // слушатели
 buttonAdd.addEventListener('click', openPopup);
@@ -106,28 +118,3 @@ buttonClose.addEventListener('click', closePopup);
 cardPopup.addEventListener('submit', createCard);
 list.addEventListener('click', addNndRemoveLike);
 list.addEventListener('click', deleteCard);
-
-
-/* REVIEW. Резюме.
-Неплохая работа. Весь функционал, требуемый по заданию, работает.
-
-В чем достигнут успех.
-1. Студент в основном свободно и правильно применяет конструкции языка js.
-2. Использовано делегирование событий.
-3. Перезагрузка страницы предотвращена инструкцией event.preventDefault.
-4. Функциям и константам даны названия, имеющие смысл.
-5. Сделана валидация формы карточки с выводом сообщения об ошибке.
-6. Функции addCard передаётся параметр в виде объекта.
-
-
-
-Что можно улучшить.
-1. Лучше добавление карточки к контейнеру всех карточек делать при рендере карточек, введя дополнительную функцию
-добавления карточки в конец общего списка, а не в функции addCard (подробности в ревью в коде addCard).
-2. addCard лучше переименовать в createTemplate(подробности в ревью в коде addCard).
-3. Рендер карточек лучше поместить в функцию, где будет вызываться и функция добавления карточки в конец списка(подробности в ревью в коде).
-5. В обработчике сабмита формы вызывать и функцию создания шаблона карточки, и функцию добавления карточки в конец списка.
-
-Задание принято!
-
-*/
